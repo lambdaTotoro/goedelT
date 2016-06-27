@@ -3,6 +3,7 @@ module Main where
 import System.IO
 
 import Types
+import Typechecker
 import Evaluator
 import Parser
 
@@ -31,12 +32,12 @@ repl ts = do
                  ":context       Show current context",
                  ":clear         Clear current context\n"] >> repl ts
     (Expr e)  -> let exp = e 
-                  in do case typeCheck [] exp of
+                  in do case typecheck exp of
                           (Left  err) -> putStrLn $ "Error: Typecheck failed!\n" ++  err
                           (Right tau) -> print $ eval exp
                         repl ts
     (Let n e) -> repl ((n,e):ts)
-    (Check e) -> do case typeCheck [] e of
+    (Check e) -> do case typecheck e of
                       (Left  err) -> putStrLn $ "Error: Typecheck failed!\n" ++ err
                       (Right tau) -> putStrLn $ "This expression has type "  ++ show tau 
                     repl ts

@@ -98,3 +98,12 @@ expParser = pAp <|> pLambda <|> pRec <|> pZ <|> pSucc <|> pVar
              pure $ Ap t1 t2
           <?> "Application parser"
 
+    pBool :: Parser Exp
+    pBool = (string "true"  >> pure Truth) 
+        <|> (string "false" >> pure Falsehood)
+ 
+    pIf :: Parser Exp
+    pIf = do string "if "    ; t  <- expParser
+             string " then " ; bt <- expParser
+             string " else " ; bf <- expParser
+             pure $ If t bt bf

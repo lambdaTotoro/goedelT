@@ -1,6 +1,7 @@
 module GCD where
 
 import Types
+import Typechecker
 import Evaluator
 import Examples
 
@@ -19,7 +20,7 @@ typecorrects :: [(Exp, Either String Typ)]
 typecorrects = (filter (\(_,t) -> (t == Right (Arrow Nat (Arrow Nat Nat))))) foo 
   where
     foo :: [(Exp, Either String Typ)]
-    foo = map (\e -> (e, typeCheck [] e)) possibles
+    foo = map (\e -> (e, typecheck e)) possibles
 
 possibles :: [Exp]
 possibles = generate 2
