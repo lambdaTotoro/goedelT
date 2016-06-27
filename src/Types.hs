@@ -16,6 +16,16 @@ data Exp = Z                       -- Zero
          | Ap Exp Exp              -- Application
          deriving (Eq, Ord)
 
+
+data Input = Quit
+           | Help
+           | Context
+           | Clear
+           | Let String Exp
+           | Expr Exp
+           | NoParse
+           deriving Eq
+
 ------------------------------------------------------
 
 instance Show Typ where

@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Parser
-( parseTyp, parseExp )
+( parseTyp, parseExp, parseInput )
 where
 
 import Control.Applicative ((<|>))
@@ -10,13 +10,32 @@ import Data.Attoparsec.ByteString.Char8
 
 import Types
 
+parseInput :: String -> Input
+parseInput str = case ((parseOnly inputParser) . pack) str of
+  (Right i) -> i
+  (Left  e) -> NoParse
+  where
+    inputParser :: Parser Input
+    inputParser = ((string ":quit")    >> pure Quit)
+              <|> ((string ":context") >> pure Context)
+              <|> ((string ":clear")   >> pure Clear)
+              <|> ((string ":help")    >> pure Help)
+              <|> letParser
+              <|> do exp <- expParser
+                     pure $ Expr exp
+
+    letParser :: Parser Input
+    letParser = do string "let "
+                   name <- many1 anyChar
+                   string " = "
+                   exp <- expParser
+                   pure $ Let name exp
+
 parseTyp :: String -> Either String Typ
 parseTyp = (parseOnly typParser) . pack
 
 parseExp :: String -> Either String Exp
 parseExp = (parseOnly expParser) . pack
-
---------
 
 typParser :: Parser Typ
 typParser = pNat <|> pArr
