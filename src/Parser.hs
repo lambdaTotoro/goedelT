@@ -21,15 +21,25 @@ parseInput str = case ((parseOnly inputParser) . pack) str of
               <|> ((string ":clear")   >> pure Clear)
               <|> ((string ":help")    >> pure Help)
               <|> letParser
-              <|> do exp <- expParser
-                     pure $ Expr exp
+              <|> typecheckParser
+              <|> evalParser
 
     letParser :: Parser Input
-    letParser = do string "let "
-                   name <- many1 anyChar
-                   string " = "
+    letParser = do string ":let "
+                   name <- anyChar
+                   string " name "
                    exp <- expParser
-                   pure $ Let name exp
+                   pure $ Let [name] exp
+
+    evalParser :: Parser Input
+    evalParser = do string ":eval "
+                    exp <- expParser
+                    pure $ Expr exp
+
+    typecheckParser :: Parser Input
+    typecheckParser = do string ":typecheck "
+                         exp <- expParser
+                         pure $ Check exp
 
 parseTyp :: String -> Either String Typ
 parseTyp = (parseOnly typParser) . pack

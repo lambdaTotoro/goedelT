@@ -23,6 +23,7 @@ data Input = Quit
            | Clear
            | Let String Exp
            | Expr Exp
+           | Check Exp
            | NoParse
            deriving Eq
 
