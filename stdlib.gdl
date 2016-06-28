@@ -1,0 +1,5 @@
+add : (ℕ → (ℕ → ℕ))
+add = λ(a : ℕ).λ(b : ℕ).rec b { Z ~> a | S(c) with d ~> S(d) }
+
+double : (ℕ → ℕ)
+double = λ(a : ℕ).rec a { Z ~> Z | S(b) with c ~> S(S(c)) }
