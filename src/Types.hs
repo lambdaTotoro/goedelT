@@ -31,7 +31,7 @@ data Exp = Z                       -- Zero
          | InL   Typ Typ Exp
          | InR   Typ Typ Exp
          -- Option Types
-         | Empty
+         | Empty Typ
          | Full Exp
          | Which Typ Exp Exp Exp Exp
          -- Booleans
@@ -77,7 +77,7 @@ instance Show Exp where
   show Falsehood           = "false"
   show (If t bt bf)        = "if " ++ show t ++ " then " ++ show bt ++ " else " ++ show bf
   -- Option Types
-  show Empty               = "{}"
+  show (Empty tau)         = "({} : " ++ show tau ++ ")"
   show (Full e)            = "{" ++ show e ++ "}"
   show (Which t e0 x e1 e) = "which " ++ show e ++ "{ empty ~> " ++ show e0 ++ " | full(" ++
                               show x ++ " ~> " ++ show e1 ++ " }"
