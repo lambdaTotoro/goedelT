@@ -4,12 +4,14 @@ import Data.List (intercalate)
 
 type Gamma = [(Exp, Typ)]
 
-data Typ = Nat
+data Typ = Void
+         | Unit
+         | Nat
          | Boolean
-         | Arrow   Typ Typ
-         | Product [Typ]
-         | Sum     [Typ]
          | Option  Typ
+         | Arrow   Typ Typ
+         | Product Typ Typ
+         | Sum     Typ Typ
          deriving (Eq, Ord)
 
 data Exp = Z                       -- Zero
@@ -19,9 +21,15 @@ data Exp = Z                       -- Zero
          | Rec Exp Exp Exp Exp Exp -- Recursor
          | Ap Exp Exp              -- Application
          -- Product Types
-         | Tuple [(Exp, Exp)]
-         | Projection Exp Exp
-         -- Sum Types
+         | Triv                    -- Empty  tuple
+         | Tuple  Exp Exp          -- Binaty tuple
+         | Pi_one Exp              -- Projection to first  element
+         | Pi_two Exp              -- Projection to second element
+         -- Sum Type
+         | Abort Typ Exp
+         | Case  Exp Exp Exp Exp Exp 
+         | InL   Typ Typ Exp
+         | InR   Typ Typ Exp
          -- Option Types
          | Empty
          | Full Exp
@@ -47,20 +55,40 @@ data Input = Quit
 
 instance Show Typ where
   show Nat           = "ℕ"
+  show Void          = "𝟘"
+  show Unit          = "𝟙"
   show Boolean       = "𝟚"
-  show (Arrow t1 t2) = "(" ++ show t1 ++ " → " ++ show t2 ++ ")"
-  show (Product [])  = "𝟙"
-  show (Product ts)  = "(" ++ intercalate "⨯" (map show ts) ++ ")"
-  show (Sum     [])  = "𝟘"
-  show (Sum     ts)  = "(" ++ intercalate "+" (map show ts) ++ ")"
-  show (Option tau)  = show tau ++ "?"
+  show (Option  t  ) = "(" ++ show t ++ ")?"
+  show (Arrow   t s) = "(" ++ show t ++ " → " ++ show s ++ ")"
+  show (Product t s) = "(" ++ show t ++ " ⨯ " ++ show s ++ ")"
+  show (Sum     t s) = "(" ++ show t ++ " + " ++ show s ++ ")"
 
 instance Show Exp where
-  show (Z)               = "0"
-  show (Succ e)          = "S(" ++ show e ++ ")"
-  show (Var c)           = [c]
-  show (Lambda t v b)    = "λ(" ++ show v ++ " : " ++ show t ++ ")." ++ show b
-  show (Rec e0 x y e1 e) = "rec " ++ show e ++ " { Z ~> " ++ show e0 ++ " | S(" ++
-                           show x ++ ") with " ++ show y ++ " ~> " ++ show e1 ++ " }"   
-  show (Ap e1 e2)        = '(':show e1 ++ "[" ++ show e2 ++ "])"
-
+  -- Basics
+  show (Z)                 = "Z"
+  show (Succ e)            = "S(" ++ show e ++ ")"
+  show (Var c)             = [c]
+  show (Lambda t v b)      = "λ(" ++ show v ++ " : " ++ show t ++ ")." ++ show b
+  show (Rec e0 x y e1 e)   = "rec " ++ show e ++ " { Z ~> " ++ show e0 ++ " | S(" ++
+                             show x ++ ") with " ++ show y ++ " ~> " ++ show e1 ++ " }"   
+  show (Ap e1 e2)          = '(':show e1 ++ "[" ++ show e2 ++ "])"
+  -- Booleans
+  show Truth               = "true"
+  show Falsehood           = "false"
+  show (If t bt bf)        = "if " ++ show t ++ " then " ++ show bt ++ " else " ++ show bf
+  -- Option Types
+  show Empty               = "{}"
+  show (Full e)            = "{" ++ show e ++ "}"
+  show (Which t e0 x e1 e) = "which " ++ show e ++ "{ empty ~> " ++ show e0 ++ " | full(" ++
+                              show x ++ " ~> " ++ show e1 ++ " }"
+  -- Product Types
+  show Triv                = "<>"
+  show (Tuple e1 e2)       = "<" ++ show e1 ++ ", " ++ show e2 ++ ">"
+  show (Pi_one e)          = "π1(" ++ show e ++ ")"
+  show (Pi_two e)          = "π2(" ++ show e ++ ")"
+  -- Sum Types
+  show (Abort t e)         = "abort(" ++ show e ++ ")"
+  show (InL t1 t2 e)       = "inL("   ++ show e ++ ")"
+  show (InR t1 t2 e)       = "inR("   ++ show e ++ ")"
+  show (Case e x e1 y e2)  = "check " ++ show e ++ " { inL(" ++ show x ++ ") ~> " ++ show e1 
+                              ++ " | inR(" ++ show y ++ ") ~> " ++ show e2 ++ " } " 
