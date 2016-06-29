@@ -48,7 +48,7 @@ parseExp :: String -> Either String Exp
 parseExp = (parseOnly expParser) . pack
 
 typParser :: Parser Typ
-typParser = pNat <|> pArrow
+typParser = pNat <|> pVoid <|> pUnit <|> pBool <|> pOption <|> pSum <|> pProduct <|> pArrow
   where
     pNat :: Parser Typ
     pNat = (string "ℕ"   >> pure Nat) <|> 
