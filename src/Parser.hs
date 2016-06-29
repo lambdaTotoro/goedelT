@@ -48,18 +48,46 @@ parseExp :: String -> Either String Exp
 parseExp = (parseOnly expParser) . pack
 
 typParser :: Parser Typ
-typParser = pNat <|> pArr
+typParser = pNat <|> pArrow
   where
     pNat :: Parser Typ
     pNat = (string "ℕ"   >> pure Nat) <|> 
            (string "nat" >> pure Nat) <|> 
            (string "Nat" >> pure Nat)
 
-    pArr :: Parser Typ
-    pArr = do char '(' ; t1 <- typParser 
-              ((string " -> ") <|> (string " → "))
-              t2 <- typParser ; char ')'
-              pure $ Arrow t1 t2
+    pVoid :: Parser Typ
+    pVoid = (string "𝟘"    >> pure Void) <|>
+            (string "void" >> pure Void) <|>
+            (string "Void" >> pure Void)
+
+    pUnit :: Parser Typ
+    pUnit = (string "𝟙"    >> pure Unit) <|>
+            (string "unit" >> pure Unit) <|>
+            (string "Unit" >> pure Unit)
+
+    pBool :: Parser Typ
+    pBool = (string "𝟚"       >> pure Boolean) <|>
+            (string "Bool"    >> pure Boolean) <|> (string "bool"    >> pure Boolean) <|>
+            (string "Boolean" >> pure Boolean) <|> (string "boolean" >> pure Boolean)
+
+    pOption :: Parser Typ
+    pOption = do string "(" ; tau <- typParser ; string ")?" ; pure (Option tau)
+ 
+    pArrow :: Parser Typ
+    pArrow = do char '(' ; tau <- typParser 
+                ((string " -> ") <|> (string " → "))
+                sigma <- typParser ; char ')'
+                pure $ Arrow tau sigma
+
+    pProduct :: Parser Typ
+    pProduct = do char '(' ; tau <- typParser
+                  ((string " x ") <|> (string " ⨯ "))
+                  sigma <- typParser ; char ')'
+                  pure $ Product tau sigma
+                  
+    pSum :: Parser Typ
+    pSum = do char '(' ; tau <- typParser ; string " + "
+              sigma <- typParser ; char ')' ; pure $ Sum tau sigma
 
 expParser :: Parser Exp
 expParser = pAp <|> pLambda <|> pRec <|> pZ <|> pSucc <|> pVar
