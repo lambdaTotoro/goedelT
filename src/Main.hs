@@ -7,9 +7,6 @@ import Typechecker
 import Evaluator
 import Parser
 
-import Examples
-import GCD
-
 repl :: [(String, Exp)] -> IO ()
 repl ts = do
   putStr "goedelT > "
