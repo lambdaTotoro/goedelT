@@ -4,6 +4,7 @@ import Data.List (intercalate)
 
 type Gamma = [(Exp, Typ)]
 
+-- Haskell type of GödelT types
 data Typ = Void
          | Unit
          | Nat
@@ -12,47 +13,49 @@ data Typ = Void
          | Arrow   Typ Typ
          | Product Typ Typ
          | Sum     Typ Typ
-         deriving (Eq, Ord)
+         deriving (Eq)
 
-data Exp = Z                       -- Zero
-         | Succ Exp                -- Successor
-         | Var Char                -- Variables
-         | Lambda Typ Exp Exp      -- Lambda 
-         | Rec Exp Exp Exp Exp Exp -- Recursor
-         | Ap Exp Exp              -- Application
+-- Haskell type of GödelT expressions
+data Exp = Z                         -- Zero
+         | Succ Exp                  -- Successor
+         | Var Char                  -- Variables
+         | Lambda Typ Exp Exp        -- Lambda 
+         | Rec Exp Exp Exp Exp Exp   -- Recursor
+         | Ap Exp Exp                -- Application
          -- Product Types
-         | Triv                    -- Empty  tuple
-         | Tuple  Exp Exp          -- Binaty tuple
-         | Pi_one Exp              -- Projection to first  element
-         | Pi_two Exp              -- Projection to second element
+         | Triv                      -- Empty  tuple
+         | Tuple  Exp Exp            -- Binary tuple
+         | Pi_one Exp                -- Projection to first  element
+         | Pi_two Exp                -- Projection to second element
          -- Sum Type
-         | Abort Typ Exp
-         | Case  Exp Exp Exp Exp Exp 
-         | InL   Typ Typ Exp
-         | InR   Typ Typ Exp
+         | Abort Typ Exp             -- Diverging computation
+         | Case  Exp Exp Exp Exp Exp -- Case analysis on sums
+         | InL   Typ Typ Exp         -- InLeft
+         | InR   Typ Typ Exp         -- InRight
          -- Option Types
-         | Empty Typ
-         | Full Exp
-         | Which Typ Exp Exp Exp Exp
+         | Empty Typ                 -- No  Value
+         | Full Exp                  -- Yes Value
+         | Which Typ Exp Exp Exp Exp -- Case analysis on options
          -- Booleans
-         | Truth
-         | Falsehood
-         | If Exp Exp Exp
-         deriving (Eq, Ord)
+         | Truth                     -- Truth constant
+         | Falsehood                 -- False constant
+         | If Exp Exp Exp            -- If/Then/Else construct
+         deriving (Eq)
 
-
+-- Inputs expected on REPL
 data Input = Quit
            | Help
            | Context
            | Clear
            | Let String Exp
-           | Expr Exp
-           | Check Exp
+           | Expr       Exp
+           | Check      Exp
            | NoParse
            deriving Eq
 
 ------------------------------------------------------
 
+-- Beautiful Types
 instance Show Typ where
   show Nat           = "ℕ"
   show Void          = "𝟘"
@@ -63,6 +66,7 @@ instance Show Typ where
   show (Product t s) = "(" ++ show t ++ " ⨯ " ++ show s ++ ")"
   show (Sum     t s) = "(" ++ show t ++ " + " ++ show s ++ ")"
 
+-- Beautiful Expressions
 instance Show Exp where
   -- Basics
   show (Z)                 = "Z"
@@ -79,8 +83,8 @@ instance Show Exp where
   -- Option Types
   show (Empty tau)         = "({} : " ++ show tau ++ ")"
   show (Full e)            = "{" ++ show e ++ "}"
-  show (Which t e0 x e1 e) = "which " ++ show e ++ "{({} : " ++ show t ++ ") ~> " ++ show e0 ++ 
-                             " | full(" ++ show x ++ ") ~> " ++ show e1 ++ " }"
+  show (Which t e0 x e1 e) = "which " ++ show e ++ "{({} : " ++ show t ++ ") ~> " ++ show e0
+                             ++ " | full(" ++ show x ++ ") ~> " ++ show e1 ++ " }"
   -- Product Types
   show Triv                = "<>"
   show (Tuple e1 e2)       = "<" ++ show e1 ++ ", " ++ show e2 ++ ">"
@@ -91,4 +95,4 @@ instance Show Exp where
   show (InL t1 t2 e)       = "inL("   ++ show e ++ ") : " ++ show (Sum t1 t2)
   show (InR t1 t2 e)       = "inR("   ++ show e ++ ") : " ++ show (Sum t1 t2)
   show (Case e x e1 y e2)  = "case " ++ show e ++ " { inL(" ++ show x ++ ") ~> " ++ show e1 
-                              ++ " | inR(" ++ show y ++ ") ~> " ++ show e2 ++ " } " 
+                              ++ " | inR(" ++ show y ++ ") ~> " ++ show e2 ++ " }"
