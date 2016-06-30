@@ -34,3 +34,21 @@ circ = λ(f : (ℕ → ℕ)).λ(g : (ℕ → ℕ)).λ(x : ℕ).(f[(g[x])])
 
 # Repeated function application
 it = λ(f : (ℕ → ℕ)).λ(n : ℕ).rec n { Z ~> id_nat | S(x) with g ~> ((circ[f])[g]) }
+
+# BOOLEANS
+
+# Identity on natural numbers
+id_bool : (𝟚 → 𝟚)
+id_bool = λ(a : 𝟚).a
+
+# Negation
+not : (𝟚 → 𝟚)
+not = λ(a : 𝟚).if a then ff else tt
+
+# Conjunction
+and : (𝟚 → (𝟚 → 𝟚))
+and = λ(a : 𝟚).λ(b : 𝟚).if a then if b then tt else ff else ff
+
+# Disjunction
+or : (𝟚 → (𝟚 → 𝟚))
+or = λ(a : 𝟚).λ(b : 𝟚).if a then tt else if b then tt else ff
