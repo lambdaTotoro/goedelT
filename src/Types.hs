@@ -79,8 +79,8 @@ instance Show Exp where
   -- Option Types
   show (Empty tau)         = "({} : " ++ show tau ++ ")"
   show (Full e)            = "{" ++ show e ++ "}"
-  show (Which t e0 x e1 e) = "which " ++ show e ++ "{ empty ~> " ++ show e0 ++ " | full(" ++
-                              show x ++ " ~> " ++ show e1 ++ " }"
+  show (Which t e0 x e1 e) = "which " ++ show e ++ "{({} : " ++ show t ++ ") ~> " ++ show e0 ++ 
+                             " | full(" ++ show x ++ ") ~> " ++ show e1 ++ " }"
   -- Product Types
   show Triv                = "<>"
   show (Tuple e1 e2)       = "<" ++ show e1 ++ ", " ++ show e2 ++ ">"
@@ -88,7 +88,7 @@ instance Show Exp where
   show (Pi_two e)          = "π2(" ++ show e ++ ")"
   -- Sum Types
   show (Abort t e)         = "abort(" ++ show e ++ ")"
-  show (InL t1 t2 e)       = "inL("   ++ show e ++ ")"
-  show (InR t1 t2 e)       = "inR("   ++ show e ++ ")"
+  show (InL t1 t2 e)       = "inL("   ++ show e ++ ") : " ++ show (Sum t1 t2)
+  show (InR t1 t2 e)       = "inR("   ++ show e ++ ") : " ++ show (Sum t1 t2)
   show (Case e x e1 y e2)  = "check " ++ show e ++ " { inL(" ++ show x ++ ") ~> " ++ show e1 
                               ++ " | inR(" ++ show y ++ ") ~> " ++ show e2 ++ " } " 

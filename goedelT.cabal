@@ -20,7 +20,7 @@ executable goedelT
   main-is:             Main.hs
   -- other-modules:       
   -- other-extensions:    
-  build-depends:       base >=4.8 && <4.9,
+  build-depends:       base >=4.8,
                        attoparsec >=0.13,
                        bytestring >=0.10
   hs-source-dirs:      src
