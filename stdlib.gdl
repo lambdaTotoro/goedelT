@@ -28,5 +28,9 @@ factorial = λ(a : ℕ).rec a { Z ~> S(0) | S(b) with c ~> ((((mult)[S(b)]))[c])
 double : (ℕ → ℕ)
 double = λ(a : ℕ).rec a { Z ~> Z | S(b) with c ~> S(S(c)) }
 
+# Function composition for nat -> nat
+circ : ((ℕ → ℕ) → ((ℕ → ℕ) → (ℕ → ℕ)))
+circ = λ(f : (ℕ → ℕ)).λ(g : (ℕ → ℕ)).λ(x : ℕ).(f[(g[x])])
+
 # Repeated function application
-# Code goes here...
+it = λ(f : (ℕ → ℕ)).λ(n : ℕ).rec n { Z ~> id_nat | S(x) with g ~> ((circ[f])[g]) }
