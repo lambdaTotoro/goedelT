@@ -1,5 +1,32 @@
+#######################################
+#                                     #
+#    GödelT "Standard Library"        #
+#                                     #
+#  By Jonas Betzendahl, 2016          #
+#     @jbetzend                       #
+#  jbetzend@techfak.uni-bielefeld.de  #
+#                                     #
+#######################################
+
+# Identity on natural numbers
+id_nat : (ℕ → ℕ)
+id_nat = λ(a : ℕ).a
+
+# Addition on natural numbers
 add : (ℕ → (ℕ → ℕ))
 add = λ(a : ℕ).λ(b : ℕ).rec b { Z ~> a | S(c) with d ~> S(d) }
 
+# Multiplication in natural numbers
+mult : (ℕ → (ℕ → ℕ))
+mult = λ(a : ℕ).λ(b : ℕ).rec a { Z ~> 0 | S(c) with d ~> ((add[b])[d]) }
+
+# Factorial on natural numbers
+factorial : (ℕ → ℕ)
+factorial = λ(a : ℕ).rec a { Z ~> S(0) | S(b) with c ~> ((((mult)[S(b)]))[c]) }
+
+# Doubling of natural numbers
 double : (ℕ → ℕ)
 double = λ(a : ℕ).rec a { Z ~> Z | S(b) with c ~> S(S(c)) }
+
+# Repeated function application
+# Code goes here...

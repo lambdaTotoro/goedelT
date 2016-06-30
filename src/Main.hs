@@ -7,6 +7,8 @@ import Typechecker
 import Evaluator
 import Parser
 
+-- TODO: Improve typechecker resp. option types and more (ℕ)?
+
 repl :: [(String, Exp)] -> IO ()
 repl ts = do
   putStr "goedelT > "

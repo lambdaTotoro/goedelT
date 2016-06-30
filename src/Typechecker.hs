@@ -45,7 +45,7 @@ typecheck' g (If t bt bf) = case typecheck' g t of
       (Right s)  -> if s == t then Right t else Left $ typeError bf (show t) s
   (Right tau)     -> Left $ typeError t (show Boolean) tau
 -- Option Types
-typecheck' g (Empty tau) = pure tau
+typecheck' g (Empty tau) = pure $ Option tau
 typecheck' g (Full e)    = (typecheck' g e) >>= (pure . Option)
 typecheck' g (Which t e1 x e2 e) = case typecheck' g e of
   (Left err)        -> Left err
