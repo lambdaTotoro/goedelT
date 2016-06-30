@@ -90,5 +90,5 @@ instance Show Exp where
   show (Abort t e)         = "abort(" ++ show e ++ ")"
   show (InL t1 t2 e)       = "inL("   ++ show e ++ ") : " ++ show (Sum t1 t2)
   show (InR t1 t2 e)       = "inR("   ++ show e ++ ") : " ++ show (Sum t1 t2)
-  show (Case e x e1 y e2)  = "check " ++ show e ++ " { inL(" ++ show x ++ ") ~> " ++ show e1 
+  show (Case e x e1 y e2)  = "case " ++ show e ++ " { inL(" ++ show x ++ ") ~> " ++ show e1 
                               ++ " | inR(" ++ show y ++ ") ~> " ++ show e2 ++ " } " 
