@@ -52,3 +52,11 @@ and = λ(a : 𝟚).λ(b : 𝟚).if a then if b then tt else ff else ff
 # Disjunction
 or : (𝟚 → (𝟚 → 𝟚))
 or = λ(a : 𝟚).λ(b : 𝟚).if a then tt else if b then tt else ff
+
+# NOR
+nor : (𝟚 → (𝟚 → 𝟚))
+nor = λ(a : 𝟚).λ(b : 𝟚).(not[((or[a])[b])])
+
+# NAND
+nand : (𝟚 → (𝟚 → 𝟚))
+nand = λ(a : 𝟚).λ(b : 𝟚).(not[((and[a])[b])])
