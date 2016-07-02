@@ -6,10 +6,10 @@ import Types
 eval :: Exp -> Exp
 eval (Succ e)        = Succ (eval e)
 eval ap@(Ap e1 e2)  
-  | not (val e1)     = eval (Ap (eval e1) e2)
-  | not (val e2)     = eval (Ap e1 (eval e2))
+  | not (val e1)     = eval $ (Ap (eval e1) e2)
+  | not (val e2)     = eval $ (Ap e1 (eval e2))
   | otherwise        = case e1 of 
-    (Lambda tau x e) -> eval (replace e2 x e)
+    (Lambda tau x e) -> eval $ replace e2 x e
     _                -> ap
 eval (Rec e0 x y e1 q)
   | not (val q)      = eval (Rec e0 x y e1 (eval q))
@@ -65,7 +65,7 @@ val :: Exp -> Bool
 -- Basics
 val Z              = True
 val (Succ e)       = val e
-val (Lambda t v e) = True
+val (Lambda _ _ _) = True
 -- Booleans
 val Truth          = True
 val Falsehood      = True
@@ -82,31 +82,69 @@ val (InR _ _ e)    = val e
 val _              = False
 
 -- Replaces occurences of variables (second expression) with the
--- first expression in the third expression 
+-- first expression in the third expression. 
+-- In other words: return 4 = replace 2 by 1 in 3
 replace :: Exp -> Exp -> Exp -> Exp
 -- Basics
-replace _ _ (Z)                 = Z
-replace e v (Succ n)            = Succ (replace e v n)
-replace e v var@(Var x)         | var == v  = e
-                                | otherwise = var
-replace e v (Ap e1 e2)          = Ap (replace e v e1) (replace e v e2)
-replace e v (Lambda t x b)      = Lambda t (replace e v x) (replace e v b)
-replace e v (Rec e0 x y e1 q)   = Rec (replace e v e0) (replace e v x) (replace e v y) (replace e v e1) (replace e v q)
+replace e v (Z)         = if v == Z then e else Z
+replace e v k@(Succ n)  = if v == k then e else Succ (replace e v n)
+replace e v k@(Var c)   = if v == k then e else k
+replace e v k@(Ap e1 e2)
+  | v == k    = e    
+  | otherwise = Ap (replace e v e1) (replace e v e2)
+replace e v k@(Lambda t x b)
+  | v == k    = e
+  | v == x    = Lambda t x b
+  | otherwise = Lambda t (replace e v x) (replace e v b)
+replace e v k@(Rec e0 x y e1 q)   
+  | v == k           = e
+  | v == x || v == y = Rec (replace e v e0) x y e1 q
+  | otherwise        = Rec (replace e v e0) x y (replace e v e1) (replace e v q)
 -- Product Types
-replace e v (Triv)              = Triv
-replace e v (Tuple e1 e2)       = Tuple (replace e v e1) (replace e v e2)
-replace e v (Pi_one q)          = Pi_one (replace e v q)
-replace e v (Pi_two q)          = Pi_two (replace e v q)
+replace e v k@(Triv)
+  | v == k    = e
+  | otherwise = Triv
+replace e v k@(Tuple e1 e2)
+  | v == k    = e
+  | otherwise = Tuple (replace e v e1) (replace e v e2) 
+replace e v k@(Pi_one q) 
+  | v == k    = e
+  | otherwise = Pi_one (replace e v q) 
+replace e v k@(Pi_two q)
+  | v == k    = e
+  | otherwise = Pi_two (replace e v q)
 -- Sum Types
-replace e v (Abort t q)         = Abort t (replace e v q)
-replace e v (InL t1 t2 q)       = InL t1 t2 (replace e v q)
-replace e v (InR t1 t2 q)       = InR t1 t2 (replace e v q)
-replace e v (Case q x e1 y e2)  = Case (replace e v q) (replace e v x) (replace e v e1) (replace e v y) (replace e v e2)
+replace e v k@(Abort t q)
+  | v == k    = e
+  | otherwise = Abort t (replace e v q)
+replace e v k@(InL t1 t2 q)
+  | v == k    = e
+  | otherwise = InL t1 t2 (replace e v q)
+replace e v k@(InR t1 t2 q)
+  | v == k    = e
+  | otherwise = InR t1 t2 (replace e v q)
+replace e v k@(Case q x e1 y e2)  
+  | v == k           = e
+  | v == x && v == y = Case q x e1 y e2
+  | v == x           = Case (replace e v q) x e1 y (replace e v e2)
+  | v == y           = Case (replace e v q) x (replace e v e1) y e2
+  | otherwise        = Case (replace e v q) x (replace e v e1) y (replace e v e2)
 -- Option Types
-replace e v (Empty t)           = Empty t
-replace e v (Full q)            = Full (replace e v q)
-replace e v (Which t x e1 y e2) = Which t (replace e v x) (replace e v e1) (replace e v y) (replace e v e2)
+replace e v k@(Empty t)
+  | v == k    = e
+  | otherwise = Empty t
+replace e v k@(Full q)
+  | v == k    = e
+  | otherwise = Full (replace e v q)
+replace e v k@(Which t x e1 y e2)
+  | v == k           = e
+  | v == x && v == y = Which t x e1 y e2
+  | v == x           = Which t x e1 y (replace e v e2)
+  | v == y           = Which t x (replace e v e1) y e2
+  | otherwise        = Which t (replace e v x) (replace e v e1) (replace e v y) (replace e v e2)
 -- Booleans
-replace e v Truth               = Truth
-replace e v Falsehood           = Falsehood
-replace e v (If t bt bf)        = If (replace e v t) (replace e v bt) (replace e v bf)
+replace e v k@(Truth)           = if v == k then e else Truth
+replace e v k@(Falsehood)       = if v == k then e else Falsehood
+replace e v k@(If t bt bf) 
+  | v == k    = e
+  | otherwise = If (replace e v t) (replace e v bt) (replace e v bf)
