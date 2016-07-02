@@ -18,11 +18,11 @@ add = λ(a : ℕ).λ(b : ℕ).rec b { Z ~> a | S(c) with d ~> S(d) }
 
 # Multiplication in natural numbers
 mult : (ℕ → (ℕ → ℕ))
-mult = λ(a : ℕ).λ(b : ℕ).rec a { Z ~> 0 | S(c) with d ~> ((add[b])[d]) }
+mult = λ(a : ℕ).λ(b : ℕ).rec a { Z ~> 0 | S(c) with d ~> ((_add_[b])[d]) }
 
 # Factorial on natural numbers
 factorial : (ℕ → ℕ)
-factorial = λ(a : ℕ).rec a { Z ~> S(0) | S(b) with c ~> ((((mult)[S(b)]))[c]) }
+factorial = λ(a : ℕ).rec a { Z ~> S(0) | S(b) with c ~> ((((_mult_)[S(b)]))[c]) }
 
 # Doubling of natural numbers
 double : (ℕ → ℕ)

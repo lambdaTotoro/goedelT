@@ -90,8 +90,8 @@ replace e v (Succ n)            = Succ (replace e v n)
 replace e v var@(Var x)         | var == v  = e
                                 | otherwise = var
 replace e v (Ap e1 e2)          = Ap (replace e v e1) (replace e v e2)
-replace e v (Lambda t x b)      = Lambda t x (replace e v b)
-replace e v (Rec e0 x y e1 q)   = Rec (replace e v e0) x y (replace e v e1) (replace e v q)
+replace e v (Lambda t x b)      = Lambda t (replace e v x) (replace e v b)
+replace e v (Rec e0 x y e1 q)   = Rec (replace e v e0) (replace e v x) (replace e v y) (replace e v e1) (replace e v q)
 -- Product Types
 replace e v (Triv)              = Triv
 replace e v (Tuple e1 e2)       = Tuple (replace e v e1) (replace e v e2)
@@ -101,11 +101,11 @@ replace e v (Pi_two q)          = Pi_two (replace e v q)
 replace e v (Abort t q)         = Abort t (replace e v q)
 replace e v (InL t1 t2 q)       = InL t1 t2 (replace e v q)
 replace e v (InR t1 t2 q)       = InR t1 t2 (replace e v q)
-replace e v (Case q x e1 y e2)  = Case (replace e v q) x (replace e v e1) y (replace e v e2)
+replace e v (Case q x e1 y e2)  = Case (replace e v q) (replace e v x) (replace e v e1) (replace e v y) (replace e v e2)
 -- Option Types
 replace e v (Empty t)           = Empty t
 replace e v (Full q)            = Full (replace e v q)
-replace e v (Which t x e1 y e2) = Which t x (replace e v e1) y (replace e v e2)
+replace e v (Which t x e1 y e2) = Which t (replace e v x) (replace e v e1) (replace e v y) (replace e v e2)
 -- Booleans
 replace e v Truth               = Truth
 replace e v Falsehood           = Falsehood

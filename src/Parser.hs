@@ -23,6 +23,7 @@ parseInput str = case ((parseOnly inputParser) . pack) str of
               <|> ((string ":context") >> pure Context)
               <|> ((string ":clear")   >> pure Clear)
               <|> ((string ":help")    >> pure Help)
+              <|> ((string ":run")     >> pure Run)
               <|> letParser
               <|> typecheckParser
               <|> evalParser
@@ -94,8 +95,13 @@ typParser = pNat <|> pVoid <|> pUnit <|> pBool <|> pOption <|> pSum <|> pProduct
 
 expParser :: Parser Exp
 expParser = pBools <|> pIf  <|> pEmpty <|> pFull <|> pWhich <|> pTuple <|> pProject <|> 
-            pVoid <|> pSum <|> pCase <|> pAp  <|> pLambda <|> pRec <|> pZ <|> pSucc <|> pVar
+            pVoid <|> pSum <|> pCase <|> pAp  <|> pLambda <|> pRec <|> pZ <|> pSucc 
+            <|> pVar <|> pPlaceholder
   where
+    pPlaceholder :: Parser Exp
+    pPlaceholder = do char '_' ; g <- many1 letter_ascii ; char '_'
+                      pure $ Placeholder g
+
     pZ :: Parser Exp
     pZ = (string "0" <|> string "Z") >> pure Z
          <?> "Zero parser"
@@ -106,7 +112,8 @@ expParser = pBools <|> pIf  <|> pEmpty <|> pFull <|> pWhich <|> pTuple <|> pProj
             <?> "Successor parser"
 
     pVar :: Parser Exp
-    pVar = do j <- letter_ascii ; pure (Var j)
+    pVar = do j  <- letter_ascii 
+              pure (Var j)
            <?> "Variable parser"
 
     pLambda :: Parser Exp
@@ -153,7 +160,7 @@ expParser = pBools <|> pIf  <|> pEmpty <|> pFull <|> pWhich <|> pTuple <|> pProj
     pWhich :: Parser Exp
     pWhich = do string "which " ; e <- expParser; string "{({} : "
                 tau <- typParser ; ") ~> " ; e0 <- expParser
-                string " | full(" ; x <- expParser 
+                string " | full(" ; x <- pVar 
                 string ") ~> "  ; e1 <- expParser ; string " }"
                 pure $ Which tau e0 x e1 e
 
@@ -196,6 +203,6 @@ expParser = pBools <|> pIf  <|> pEmpty <|> pFull <|> pWhich <|> pTuple <|> pProj
 
     pCase :: Parser Exp
     pCase = do string "case " ; e <- expParser ; string " { inL("
-               x <- expParser ; string ") ~> " ; e1 <- expParser
-               string " | inR(" ; y <- expParser ; string ") ~> "
+               x <- pVar ; string ") ~> " ; e1 <- expParser
+               string " | inR(" ; y <- pVar ; string ") ~> "
                e2 <- expParser ; string " } " ; pure $ Case e x e1 y e2

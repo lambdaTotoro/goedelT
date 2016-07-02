@@ -2,7 +2,11 @@ module Types where
 
 import Data.List (intercalate)
 
+-- Context for typing derivations
 type Gamma = [(Exp, Typ)]
+
+-- Context for evaluation
+type Context = [(String, Exp)]
 
 -- Haskell type of GödelT types
 data Typ = Void
@@ -13,10 +17,11 @@ data Typ = Void
          | Arrow   Typ Typ
          | Product Typ Typ
          | Sum     Typ Typ
-         deriving (Eq)
+         deriving (Eq, Ord)
 
 -- Haskell type of GödelT expressions
-data Exp = Z                         -- Zero
+data Exp = Placeholder String        -- Placeholder
+         | Z                         -- Zero
          | Succ Exp                  -- Successor
          | Var Char                  -- Variables
          | Lambda Typ Exp Exp        -- Lambda 
@@ -40,10 +45,11 @@ data Exp = Z                         -- Zero
          | Truth                     -- Truth constant
          | Falsehood                 -- False constant
          | If Exp Exp Exp            -- If/Then/Else construct
-         deriving (Eq)
+         deriving (Eq, Ord)
 
 -- Inputs expected on REPL
-data Input = Quit
+data Input = Run
+           | Quit
            | Help
            | Context
            | Clear
@@ -68,6 +74,7 @@ instance Show Typ where
 
 -- Beautiful Expressions
 instance Show Exp where
+  show (Placeholder str)   = "_" ++ str ++ "_" 
   -- Basics
   show (Z)                 = "Z"
   show (Succ e)            = "S(" ++ show e ++ ")"
