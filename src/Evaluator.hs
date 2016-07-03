@@ -4,6 +4,8 @@ import Types
 
 -- Evaluates a term
 eval :: Exp -> Exp
+eval (Placeholder s) = error $ "Error! Tried to run open code with placeholder " ++ s
+-- Basics
 eval (Succ e)        = Succ (eval e)
 eval ap@(Ap e1 e2)  
   | not (val e1)     = eval $ (Ap (eval e1) e2)
@@ -85,6 +87,9 @@ val _              = False
 -- first expression in the third expression. 
 -- In other words: return 4 = replace 2 by 1 in 3
 replace :: Exp -> Exp -> Exp -> Exp
+replace e v k@(Placeholder s)
+  | v == k    = e
+  | otherwise = k
 -- Basics
 replace e v (Z)         = if v == Z then e else Z
 replace e v k@(Succ n)  = if v == k then e else Succ (replace e v n)

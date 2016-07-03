@@ -1,6 +1,6 @@
 module Main where
 
-import Data.List (find, intersect, nub, union)
+import Data.List (deleteBy, find, intersect, nub, union)
 import System.IO
 
 import Types
@@ -30,7 +30,7 @@ repl ts = do
       Nothing      -> putStrLn "~> No expression \"main\" currently in context." >> repl ts
     Context   -> case ts of 
       [] -> putStrLn "~> Context currently empty!" >> repl ts
-      _  -> do putStrLn "Current Context:\n"
+      _  -> do putStrLn "\n~> Current Context:"
                mapM_ (\(n,exp) -> putStrLn ( "  " ++ n ++ " = " ++ show exp)) ts
                putStrLn ""
                repl ts 
@@ -44,23 +44,29 @@ repl ts = do
                  ":help          Display this help",
                  ":context       Show current context",
                  ":clear         Clear current context\n"] >> repl ts
-    (Expr e)  -> let exp = e 
-                  in do case typecheck exp of
-                          (Left  err) -> putStrLn $ "Error: Typecheck failed!\n" ++  err
-                          (Right tau) -> do print $ eval exp
-                        repl ts
-    (Let n e) -> repl ((n,e):ts)
-    (Check e) -> do case typecheck e of
+    (Expr e)  -> case typecheck ts e of
+                   (Left  r) -> putStrLn ("Error: Typecheck failed!\n" ++  r) >> repl ts
+                   (Right _) -> let f = foldl (\k (n,s) -> (replace (make_disjoint k s) (Placeholder n)) k)
+                                    d (x:y:zs) = if x == y then x else d (y:zs)
+                                    o = d $ iterate ((flip f) ts) e 
+                                 in (print (eval o)) >> repl ts
+    (Let n e) -> case typecheck ts e of
+       (Left r)  -> putStrLn ("Error: Typecheck failed!\n" ++  r) >> repl ts
+       (Right _) -> do putStrLn ("~> Expression now in context under name " ++ n)
+                       case find (\(n',_) -> n' == n) ts of
+                         (Nothing) -> repl (ts ++ [(n,e)])
+                         (Just _)  -> repl ((deleteBy (\(a,_) (u,_) -> a == u) (n,e) ts) ++ [(n,e)])
+    (Check e) -> do case typecheck ts e of
                       (Left  err) -> putStrLn $ "Error: Typecheck failed!\n" ++ err
                       (Right tau) -> putStrLn $ "This expression has type "  ++ show tau 
                     repl ts
     Clear     -> putStrLn "~> Context cleared!"              >> repl []
     NoParse   -> putStrLn "~> Error: Could not parse input!" >> repl ts
 
--- Returns a vesion of the second expression, that has no shared
+-- Returns a version of the second expression, that has no shared
 -- variables with the first expression. This is to avoid capture.
-make_disjoint_to :: Exp -> Exp -> Exp
-make_disjoint_to e1 e2 = rep e2 vb fresh
+make_disjoint :: Exp -> Exp -> Exp
+make_disjoint e1 e2 = rep e2 vb fresh
   where
 
     rep :: Exp -> [Exp]-> [Exp] -> Exp
@@ -79,6 +85,7 @@ make_disjoint_to e1 e2 = rep e2 vb fresh
     vars' = nub . vars
  
     vars :: Exp -> [Exp]
+    vars (Placeholder _)     = []
     vars Z                   = []
     vars (Succ e)            = vars e
     vars (Var c)             = [(Var c)]

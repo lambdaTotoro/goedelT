@@ -17,7 +17,7 @@ data Typ = Void
          | Arrow   Typ Typ
          | Product Typ Typ
          | Sum     Typ Typ
-         deriving (Eq, Ord, Show)
+         deriving (Eq, Ord)
 
 -- Haskell type of GödelT expressions
 data Exp = Placeholder String        -- Placeholder
@@ -45,7 +45,7 @@ data Exp = Placeholder String        -- Placeholder
          | Truth                     -- Truth constant
          | Falsehood                 -- False constant
          | If Exp Exp Exp            -- If/Then/Else construct
-         deriving (Eq, Ord, Show)
+         deriving (Eq, Ord)
 
 -- Inputs expected on REPL
 data Input = Run
@@ -60,8 +60,6 @@ data Input = Run
            deriving Eq
 
 ------------------------------------------------------
-
-{--
 
 -- Beautiful Types
 instance Show Typ where
