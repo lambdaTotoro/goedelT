@@ -1,6 +1,6 @@
 module Main where
 
-import Data.List (deleteBy, find, intersect, nub, union)
+import Data.List (deleteBy, find, intersect, nub, permutations, union)
 import System.IO
 
 import Types
@@ -79,7 +79,7 @@ make_disjoint e1 e2 = rep e2 vb fresh
     vb = nub $ intersect v1 v2
 
     fresh :: [Exp]
-    fresh = filter (not . (flip elem (union v1 v2))) [(Var x)| x <- ['a'..'z']] ++ [(Var y)| y <- ['A'..'Z']]
+    fresh = filter (not . (flip elem (union v1 v2))) [ Var p | p <- (permutations "abcdefghij")]
 
     vars' :: Exp -> [Exp]
     vars' = nub . vars

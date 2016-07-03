@@ -23,7 +23,7 @@ data Typ = Void
 data Exp = Placeholder String        -- Placeholder
          | Z                         -- Zero
          | Succ Exp                  -- Successor
-         | Var Char                  -- Variables
+         | Var String                -- Variables
          | Lambda Typ Exp Exp        -- Lambda 
          | Rec Exp Exp Exp Exp Exp   -- Recursor
          | Ap Exp Exp                -- Application
@@ -53,9 +53,10 @@ data Input = Run
            | Help
            | Context
            | Clear
-           | Let String Exp
-           | Expr       Exp
-           | Check      Exp
+           | Load String
+           | Let  String Exp
+           | Expr        Exp
+           | Check       Exp
            | NoParse
            deriving Eq
 
@@ -78,7 +79,7 @@ instance Show Exp where
   -- Basics
   show (Z)                 = "Z"
   show (Succ e)            = "S(" ++ show e ++ ")"
-  show (Var c)             = [c]
+  show (Var c)             = c
   show (Lambda t v b)      = "λ(" ++ show v ++ " : " ++ show t ++ ")." ++ show b
   show (Rec e0 x y e1 e)   = "rec " ++ show e ++ " { Z ~> " ++ show e0 ++ " | S(" ++
                              show x ++ ") with " ++ show y ++ " ~> " ++ show e1 ++ " }"   

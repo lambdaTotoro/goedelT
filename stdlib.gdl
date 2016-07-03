@@ -22,7 +22,7 @@ mult = λ(a : ℕ).λ(b : ℕ).rec a { Z ~> 0 | S(c) with d ~> ((_add_[b])[d]) }
 
 # Factorial on natural numbers
 factorial : (ℕ → ℕ)
-factorial = λ(a : ℕ).rec a { Z ~> S(0) | S(b) with c ~> ((((_mult_)[S(b)]))[c]) }
+factorial = λ(a : ℕ).rec a { Z ~> S(0) | S(b) with c ~> ((_mult_[S(b)])[c]) }
 
 # Doubling of natural numbers
 double : (ℕ → ℕ)
@@ -55,8 +55,8 @@ or = λ(a : 𝟚).λ(b : 𝟚).if a then tt else if b then tt else ff
 
 # NOR
 nor : (𝟚 → (𝟚 → 𝟚))
-nor = λ(a : 𝟚).λ(b : 𝟚).(not[((or[a])[b])])
+nor = λ(a : 𝟚).λ(b : 𝟚).(_not_[((_or_[a])[b])])
 
 # NAND
 nand : (𝟚 → (𝟚 → 𝟚))
-nand = λ(a : 𝟚).λ(b : 𝟚).(not[((and[a])[b])])
+nand = λ(a : 𝟚).λ(b : 𝟚).(_not_[((_and_[a])[b])])

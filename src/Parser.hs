@@ -10,9 +10,6 @@ import Data.Attoparsec.ByteString.Char8
 
 import Types
 
-dropSpace :: String -> String
-dropSpace = filter (\c -> not (c `elem` (" \n\t" :: String)))
-
 parseInput :: String -> Input
 parseInput str = case ((parseOnly inputParser) . pack) str of
   (Right i) -> i
@@ -27,13 +24,18 @@ parseInput str = case ((parseOnly inputParser) . pack) str of
               <|> letParser
               <|> typecheckParser
               <|> evalParser
+    
+    loadParser :: Parser Input
+    loadParser = do string ":load "
+                    filepth <- manyTill letter_ascii endOfLine
+                    pure $ Load filepth
 
     letParser :: Parser Input
     letParser = do string ":let "
-                   name <- anyChar
-                   string " name "
+                   name <- manyTill letter_ascii space
+                   string "= "
                    exp <- expParser
-                   pure $ Let [name] exp
+                   pure $ Let name exp
 
     evalParser :: Parser Input
     evalParser = do string ":eval "
@@ -101,6 +103,7 @@ expParser = pBools <|> pIf  <|> pEmpty <|> pFull <|> pWhich <|> pTuple <|> pProj
     pPlaceholder :: Parser Exp
     pPlaceholder = do char '_' ; g <- many1 letter_ascii ; char '_'
                       pure $ Placeholder g
+                      <?> "Placeholder parser"
 
     pZ :: Parser Exp
     pZ = (string "0" <|> string "Z") >> pure Z
@@ -112,7 +115,7 @@ expParser = pBools <|> pIf  <|> pEmpty <|> pFull <|> pWhich <|> pTuple <|> pProj
             <?> "Successor parser"
 
     pVar :: Parser Exp
-    pVar = do j  <- letter_ascii 
+    pVar = do j <- (many1 letter_ascii) 
               pure (Var j)
            <?> "Variable parser"
 
@@ -206,3 +209,17 @@ expParser = pBools <|> pIf  <|> pEmpty <|> pFull <|> pWhich <|> pTuple <|> pProj
                x <- pVar ; string ") ~> " ; e1 <- expParser
                string " | inR(" ; y <- pVar ; string ") ~> "
                e2 <- expParser ; string " } " ; pure $ Case e x e1 y e2
+
+------------------
+-- File Parsing --
+------------------
+
+parseFile :: String -> Either String Context
+parseFile = undefined 
+
+fileParser :: Parser Context
+fileParser = many1 defParser
+  where
+    defParser :: Parser (String, Exp)
+    defParser = undefined
+    
