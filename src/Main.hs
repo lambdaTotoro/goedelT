@@ -61,6 +61,10 @@ repl ts = do
                       (Right tau) -> putStrLn $ "This expression has type "  ++ show tau 
                     repl ts
     Clear     -> putStrLn "~> Context cleared!"              >> repl []
+    (Load fl) -> do inh <- readFile fl
+                    case parseFile inh of
+                      (Left err)  -> putStrLn err >> repl ts
+                      (Right con) -> putStrLn "~> File loaded!" >> repl (ts ++ con)
     NoParse   -> putStrLn "~> Error: Could not parse input!" >> repl ts
 
 -- Returns a version of the second expression, that has no shared

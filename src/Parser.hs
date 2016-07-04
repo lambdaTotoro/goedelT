@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Parser
-( parseTyp, parseExp, parseInput )
+( parseTyp, parseExp, parseInput, parseFile )
 where
 
 import Control.Applicative ((<|>))
