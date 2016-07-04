@@ -9,8 +9,8 @@
 #######################################
 
 # Identity on natural numbers
-id_nat : (ℕ → ℕ)
-id_nat = λ(a : ℕ).a
+id-Nat : (ℕ → ℕ)
+id-Nat = λ(a : ℕ).a
 
 # Addition on natural numbers
 add : (ℕ → (ℕ → ℕ))
@@ -38,8 +38,8 @@ it = λ(f : (ℕ → ℕ)).λ(n : ℕ).rec n { Z ~> id_nat | S(x) with g ~> ((ci
 # BOOLEANS
 
 # Identity on natural numbers
-id_bool : (𝟚 → 𝟚)
-id_bool = λ(a : 𝟚).a
+id-Bool : (𝟚 → 𝟚)
+id-Bool = λ(a : 𝟚).a
 
 # Negation
 not : (𝟚 → 𝟚)
