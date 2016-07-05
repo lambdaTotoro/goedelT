@@ -8,8 +8,6 @@ import Typechecker
 import Evaluator
 import Parser
 
--- TODO: Improve typechecker resp. option types and more (ℕ)?
-
 -- Entry point of program
 main :: IO ()
 main = do
