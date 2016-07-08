@@ -97,9 +97,8 @@ typParser = pNat <|> pVoid <|> pUnit <|> pBool <|> pOption <|> pSum <|> pProduct
               sigma <- typParser ; char ')' ; pure $ Sum tau sigma
 
 expParser :: Parser Exp
-expParser = pBools <|> pIf <|> pEmpty <|> pFull <|> pWhich <|> pTuple <|> pProject <|> 
-            pVoid <|> pSum <|> pCase <|> pAp <|> pLambda <|> pRec <|> pZ <|> pSucc 
-            <|> pVar <|> pPlaceholder
+expParser = pRec <|> pBools <|> pIf <|> pEmpty <|> pFull <|> pWhich <|> pTuple <|> pProject <|> 
+            pVoid <|> pSum <|> pCase <|> pAp <|> pLambda <|> pZ <|> pSucc <|> pPlaceholder <|> pVar
   where
     pPlaceholder :: Parser Exp
     pPlaceholder = do char '_' ; g <- many1 letter_ascii ; char '_'
@@ -128,7 +127,7 @@ expParser = pBools <|> pIf <|> pEmpty <|> pFull <|> pWhich <|> pTuple <|> pProje
               <?> "Lambda parser"
 
     pRec :: Parser Exp
-    pRec = do string "rec " ; e <- pVar ; string " { Z ~> "
+    pRec = do string "rec " ; e <- expParser ; string " { Z ~> "
               e0 <- expParser ; string " | S(" ; x <- pVar
               string ") with " ; y <- pVar ; string " ~> " 
               e1 <- expParser ; string " }" 

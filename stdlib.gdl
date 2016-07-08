@@ -33,7 +33,8 @@ circ : ((ℕ → ℕ) → ((ℕ → ℕ) → (ℕ → ℕ)))
 circ = λ(f : (ℕ → ℕ)).λ(g : (ℕ → ℕ)).λ(x : ℕ).(f[(g[x])])
 
 # Repeated function application
-it = λ(f : (ℕ → ℕ)).λ(n : ℕ).rec n { Z ~> id_nat | S(x) with g ~> ((circ[f])[g]) }
+it : ((ℕ → ℕ) → (ℕ → (ℕ → ℕ)))
+it = λ(f : (ℕ → ℕ)).λ(n : ℕ).rec n { Z ~> _id-Nat_ | S(x) with g ~> ((_circ_[f])[g]) }
 
 # BOOLEANS
 

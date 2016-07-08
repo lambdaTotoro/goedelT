@@ -65,7 +65,7 @@ repl ts = do
                                     (Left err)  -> putStrLn err >> repl ts
                                     (Right res) -> do let (foo,bar) = foldl' embed ([],[]) res
                                                       case bar of 
-                                                        [] -> pure ()
+                                                        [] -> putStrLn "~> All expressions correctly typed!"
                                                         xs -> do putStrLn "~> The following expressions had incorrect types:"
                                                                  putStrLn ("   " ++ (intercalate ", " xs))
                                                       putStrLn "~> File loaded!"

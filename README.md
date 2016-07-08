@@ -13,4 +13,4 @@ If you want to play around with this, just follow these steps:
 
 ## TODO:
 
-Tests, Improve Parser
+Tests, Improve Parser (Rec)
