@@ -16,18 +16,19 @@ parseInput str = case ((parseOnly inputParser) . pack) str of
   (Left  e) -> NoParse
   where
     inputParser :: Parser Input
-    inputParser = ((string ":quit")    >> pure Quit)
+    inputParser = ((string ":q")       >> pure Quit)
+              <|> ((string ":quit")    >> pure Quit)
               <|> ((string ":context") >> pure Context)
               <|> ((string ":clear")   >> pure Clear)
               <|> ((string ":help")    >> pure Help)
-              <|> ((string ":run")     >> pure Run)
               <|> letParser
               <|> typecheckParser
               <|> evalParser
+              <|> loadParser
     
     loadParser :: Parser Input
     loadParser = do string ":load "
-                    filepth <- manyTill letter_ascii endOfLine
+                    filepth <- (many1 anyChar)
                     pure $ Load filepth
 
     letParser :: Parser Input
@@ -96,8 +97,8 @@ typParser = pNat <|> pVoid <|> pUnit <|> pBool <|> pOption <|> pSum <|> pProduct
               sigma <- typParser ; char ')' ; pure $ Sum tau sigma
 
 expParser :: Parser Exp
-expParser = pBools <|> pIf  <|> pEmpty <|> pFull <|> pWhich <|> pTuple <|> pProject <|> 
-            pVoid <|> pSum <|> pCase <|> pAp  <|> pLambda <|> pRec <|> pZ <|> pSucc 
+expParser = pBools <|> pIf <|> pEmpty <|> pFull <|> pWhich <|> pTuple <|> pProject <|> 
+            pVoid <|> pSum <|> pCase <|> pAp <|> pLambda <|> pRec <|> pZ <|> pSucc 
             <|> pVar <|> pPlaceholder
   where
     pPlaceholder :: Parser Exp
@@ -214,12 +215,26 @@ expParser = pBools <|> pIf  <|> pEmpty <|> pFull <|> pWhich <|> pTuple <|> pProj
 -- File Parsing --
 ------------------
 
-parseFile :: String -> Either String Context
-parseFile = undefined 
-
-fileParser :: Parser Context
-fileParser = many1 defParser
+parseFile :: String -> Either String [(String, Exp, Typ)]
+parseFile = (parseOnly fileParser) . pack . init . clearLines
   where
-    defParser :: Parser (String, Exp)
-    defParser = undefined
+    commentOrEmpty :: String -> Bool
+    commentOrEmpty []    = True
+    commentOrEmpty (x:_) = x == '#'  
+
+    clearLines :: String -> String
+    clearLines = unlines . (filter (not . commentOrEmpty)) . lines
+
+fileParser :: Parser [(String, Exp, Typ)]
+fileParser = many1 (defParser <* endOfLine)
+
+defParser :: Parser (String, Exp, Typ)
+defParser = do nm <- manyTill anyChar space
+               string ": " 
+               tau <- typParser
+               endOfLine
+               string (pack nm)
+               string " = "
+               e <- expParser
+               pure $ (nm, e, tau)
     

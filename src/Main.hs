@@ -1,11 +1,13 @@
 module Main where
 
-import Data.List (deleteBy, find, intersect, nub, permutations, union)
+import Data.List  (deleteBy, find, foldl', intercalate, intersect, nub, permutations, union)
+
 import System.IO
+import System.Directory (doesFileExist, makeAbsolute)
 
 import Types
-import Typechecker
-import Evaluator
+import Typechecker (typecheck)
+import Evaluator   (eval, replace)
 import Parser
 
 -- Entry point of program
@@ -23,9 +25,6 @@ repl ts = do
   inp <- getLine
   case parseInput inp of
     Quit      -> pure ()
-    Run       -> case find (\(a,_) -> a == "main") ts of
-      (Just (a,e)) -> print (eval e) >> repl ts
-      Nothing      -> putStrLn "~> No expression \"main\" currently in context." >> repl ts
     Context   -> case ts of 
       [] -> putStrLn "~> Context currently empty!" >> repl ts
       _  -> do putStrLn "\n~> Current Context:"
@@ -44,7 +43,7 @@ repl ts = do
                  ":clear         Clear current context\n"] >> repl ts
     (Expr e)  -> case typecheck ts e of
                    (Left  r) -> putStrLn ("Error: Typecheck failed!\n" ++  r) >> repl ts
-                   (Right _) -> let f = foldl (\k (n,s) -> (replace (make_disjoint k s) (Placeholder n)) k)
+                   (Right _) -> let f = foldl' (\k (n,s) -> (replace (make_disjoint k s) (Placeholder n)) k)
                                     d (x:y:zs) = if x == y then x else d (y:zs)
                                     o = d $ iterate ((flip f) ts) e 
                                  in (print (eval o)) >> repl ts
@@ -59,11 +58,25 @@ repl ts = do
                       (Right tau) -> putStrLn $ "This expression has type "  ++ show tau 
                     repl ts
     Clear     -> putStrLn "~> Context cleared!"              >> repl []
-    (Load fl) -> do inh <- readFile fl
-                    case parseFile inh of
-                      (Left err)  -> putStrLn err >> repl ts
-                      (Right con) -> putStrLn "~> File loaded!" >> repl (ts ++ con)
+    (Load fl) -> do afl <- makeAbsolute fl
+                    ex  <- doesFileExist afl
+                    if ex then do inh <- readFile afl
+                                  case parseFile inh of
+                                    (Left err)  -> putStrLn err >> repl ts
+                                    (Right res) -> do let (foo,bar) = foldl' embed ([],[]) res
+                                                      case bar of 
+                                                        [] -> pure ()
+                                                        xs -> do putStrLn "~> The following expressions had incorrect types:"
+                                                                 putStrLn ("   " ++ (intercalate ", " xs))
+                                                      putStrLn "~> File loaded!"
+                                                      repl (ts ++ foo)
+                          else putStrLn "~> That file does not exist!" >> repl ts
     NoParse   -> putStrLn "~> Error: Could not parse input!" >> repl ts
+
+embed :: (Context, [String]) -> (String, Exp, Typ) -> (Context, [String])
+embed (con,fs) (nm, ex, tp) = case typecheck con ex of 
+  (Left _)   -> (con, fs ++ [nm])
+  (Right sg) -> if sg == tp then (con ++ [(nm, ex)],fs) else (con, fs ++ [nm])
 
 -- Returns a version of the second expression, that has no shared
 -- variables with the first expression. This is to avoid capture.

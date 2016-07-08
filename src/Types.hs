@@ -48,8 +48,7 @@ data Exp = Placeholder String        -- Placeholder
          deriving (Eq, Ord)
 
 -- Inputs expected on REPL
-data Input = Run
-           | Quit
+data Input = Quit
            | Help
            | Context
            | Clear

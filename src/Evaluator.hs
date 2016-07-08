@@ -1,4 +1,4 @@
-module Evaluator where
+module Evaluator (eval, replace) where
 
 import Types
 
